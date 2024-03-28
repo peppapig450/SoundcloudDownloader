@@ -24,6 +24,7 @@ def get_html(playlist_url):
     )
     driver.get(playlist_url)
     wait_until_class_count_exceeds(driver)
+    scroll_to_bottom(driver)
     return driver.page_source
 
 
@@ -38,7 +39,7 @@ def wait_until_class_count_exceeds(driver):
                     ".li.trackList__item.sc-border-light-bottom.sc-px-2x",
                 )
             )
-            > 35
+            >= 34
         )
     except TimeoutException:
         print("All 35 tracks not found.")
@@ -82,7 +83,20 @@ def scrape_playlist(playlist_html):
 
 def scroll_to_bottom(driver):
     # Get the body element
-    body = driver.find_element
+    body = driver.find_element(By.TAG_NAME, "body")
+
+    actions = ActionChains(driver)
+
+    #  Scroll to the bottom by sending the end key repeatedly
+    while True:
+        # Scroll down by sending the End key
+        actions.send_keys_to_element(body, Keys.END).pause(1).perform()
+
+        # Break the loop if reached the bottom of the page
+        if driver.execute_script(
+            "return window.innerHeight + window.scrollY"
+        ) >= driver.execute_script("return document.body.scrollHeight"):
+            break
 
 
 def parse_args():
