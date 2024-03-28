@@ -1,18 +1,44 @@
 import argparse
 
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from lxml import etree
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import TimeoutException
 from soupsieve import select
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 # Function to scrape playlist and extract the HTML
 def get_html(playlist_url):
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    options = Options()
+    options.add_argument("--log-level=3")
+    driver = webdriver.Chrome(
+        options=options, service=ChromeService(ChromeDriverManager().install())
+    )
     driver.get(playlist_url)
+    wait_until_class_count_exceeds(driver)
     return driver.page_source
+
+
+def wait_until_class_count_exceeds(driver):
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+    try:
+        WebDriverWait(driver, 10).until(
+            lambda driver: len(
+                driver.find_elements(
+                    By.CSS_SELECTOR,
+                    ".li.trackList__item.sc-border-light-bottom.sc-px-2x",
+                )
+            )
+            > 35
+        )
+    except TimeoutException:
+        print("All 35 tracks not found.")
 
 
 def scrape_playlist(playlist_html):
