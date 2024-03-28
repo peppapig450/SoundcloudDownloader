@@ -64,6 +64,24 @@ def accept_cookies(driver):
         print(f"Error: {e}")
 
 
+def scroll_to_bottom(driver):
+    # Get the body element
+    body = driver.find_element(By.TAG_NAME, "body")
+
+    actions = ActionChains(driver)
+
+    #  Scroll to the bottom by sending the end key repeatedly
+    while True:
+        # Scroll down by sending the End key
+        actions.send_keys_to_element(body, Keys.END).pause(1).perform()
+
+        # Break the loop if reached the bottom of the page
+        if driver.execute_script(
+            "return window.innerHeight + window.scrollY"
+        ) >= driver.execute_script("return document.body.scrollHeight"):
+            break
+
+
 def scrape_playlist(playlist_html):
     song_urls = []
 
@@ -85,24 +103,6 @@ def scrape_playlist(playlist_html):
             print("Warning: href attribute not found.")
 
     return song_urls
-
-
-def scroll_to_bottom(driver):
-    # Get the body element
-    body = driver.find_element(By.TAG_NAME, "body")
-
-    actions = ActionChains(driver)
-
-    #  Scroll to the bottom by sending the end key repeatedly
-    while True:
-        # Scroll down by sending the End key
-        actions.send_keys_to_element(body, Keys.END).pause(1).perform()
-
-        # Break the loop if reached the bottom of the page
-        if driver.execute_script(
-            "return window.innerHeight + window.scrollY"
-        ) >= driver.execute_script("return document.body.scrollHeight"):
-            break
 
 
 def download_songs(urls, output):
