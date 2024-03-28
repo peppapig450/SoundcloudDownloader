@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "SoundcloudDownloader"
+version = "0.1.0"
+description = "Scrape songs off a soundcloud playlist and download them using yt-dlp."
+authors = ["peppapig450 <nbgenius1@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+beautifulsoup4 = "^4.12.3"
+yt-dlp = "^2024.3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
