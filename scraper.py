@@ -1,5 +1,6 @@
 import argparse
 
+import yt_dlp
 from bs4 import BeautifulSoup
 from lxml import etree
 from selenium import webdriver
@@ -23,8 +24,13 @@ def get_html(playlist_url):
         options=options, service=ChromeService(ChromeDriverManager().install())
     )
     driver.get(playlist_url)
+
+    # Wait for all the songs to load
     wait_until_class_count_exceeds(driver)
+
+    # Scroll to the bottom of the webpage
     scroll_to_bottom(driver)
+
     return driver.page_source
 
 
@@ -99,6 +105,38 @@ def scroll_to_bottom(driver):
             break
 
 
+def download_songs(urls):
+    ydl_opts = {
+        "final_ext": "mp3",
+        "format": "ba",
+        "fragment_retries": 10,
+        "outtmpl": {
+            "default": "%(title)s.mp3",
+            "pl_thumbnail": "",
+        },
+        "postprocessors": [
+            {
+                "key": "FFmpegExtractAudio",
+                "nopostoverwrites": False,
+                "preferredcodec": "mp3",
+            },
+            {
+                "key": "FFmpegMetadata",
+                "add_metadata": True,
+            },
+            {
+                "key": "EmbedThumbnail",
+                "already_have_thubmbnail": False,
+            },
+        ],
+        "retries": 10,
+        "writethumbnail": True,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        error_code = ydl.download(urls)
+
+
 def parse_args():
     # Parse command line arguments
     parser = argparse.ArgumentParser(
@@ -123,9 +161,8 @@ def main():
     if playlist_html:
         # Scrape the playlsit to extract song URLS
         song_urls = scrape_playlist(playlist_html)
-
-        for url in song_urls:
-            print(url)
+        # Download the songs
+        download_songs(song_urls)
     else:
         print("Failed to retrieve playlist information")
 
