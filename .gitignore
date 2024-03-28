@@ -161,3 +161,7 @@ cython_debug/
 
 # python dotenv file
 .env
+
+# pictures and songs
+*.jpg
+*.mp3

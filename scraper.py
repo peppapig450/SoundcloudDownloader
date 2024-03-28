@@ -105,13 +105,13 @@ def scroll_to_bottom(driver):
             break
 
 
-def download_songs(urls):
+def download_songs(urls, output):
     ydl_opts = {
         "final_ext": "mp3",
         "format": "ba",
         "fragment_retries": 10,
         "outtmpl": {
-            "default": "%(title)s.mp3",
+            "default": f"{output}/%(title)s.mp3",
             "pl_thumbnail": "",
         },
         "postprocessors": [
@@ -126,7 +126,7 @@ def download_songs(urls):
             },
             {
                 "key": "EmbedThumbnail",
-                "already_have_thubmbnail": False,
+                "already_have_thumbnail": False,
             },
         ],
         "retries": 10,
@@ -146,6 +146,9 @@ def parse_args():
     parser.add_argument(
         "-p", "--playlist_url", help="URL of the playlist", required=True
     )
+
+    parser.add_argument("-o", "--output", help="Output directory for the songs.")
+
     args = parser.parse_args()
 
     return args
@@ -162,7 +165,7 @@ def main():
         # Scrape the playlsit to extract song URLS
         song_urls = scrape_playlist(playlist_html)
         # Download the songs
-        download_songs(song_urls)
+        download_songs(song_urls, args.output)
     else:
         print("Failed to retrieve playlist information")
 
