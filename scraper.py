@@ -1,38 +1,33 @@
 import argparse
 
-import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
+from lxml import etree
+from soupsieve import select
 
 
 # Function to scrape playlist and extract the HTML
 def get_html(playlist_url):
-    # Make the request to retrieve playlist information
-    playlist_response = requests.get(f"{playlist_url}")
-
-    # Check if the request was successful
-    if playlist_response.status_code == 200:
-        # Parse the JSON response
-        playlist_data = playlist_response.text
-        print(playlist_data)
-
-        return playlist_data
-    else:
-        print("Failed to retrieve playlist information")
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    driver.get(playlist_url)
+    return driver.page_source
 
 
 def scrape_playlist(playlist_html):
     song_urls = []
 
     # Parse the playlist HTML with BeautifulSoup
-    soup = BeautifulSoup(playlist_html, "html.parser")
+    parser = etree.HTMLParser()
+    soup = BeautifulSoup(playlist_html, "lxml", parser=parser)
 
     # find all the song objects
-    tracks = soup.select("a.trackItem__trackTitle")
-    print("Number of tracks found:", len(tracks))
-
+    tracks = select(
+        "a.trackItem__trackTitle.sc-link-dark.sc-link-primary.sc-font-light", soup
+    )
     for track in tracks:
         href = track.get("href")
-        print("Extracted href:", href)
         if href:
             # get the song urls
             full_url = "https://soundcloud.com" + href.split("?")[0]
