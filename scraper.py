@@ -3,12 +3,14 @@ import argparse
 from bs4 import BeautifulSoup
 from lxml import etree
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import TimeoutException
 from soupsieve import select
 from webdriver_manager.chrome import ChromeDriverManager
 
@@ -26,6 +28,7 @@ def get_html(playlist_url):
 
 
 def wait_until_class_count_exceeds(driver):
+    accept_cookies(driver)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
     try:
         WebDriverWait(driver, 10).until(
@@ -39,6 +42,19 @@ def wait_until_class_count_exceeds(driver):
         )
     except TimeoutException:
         print("All 35 tracks not found.")
+
+
+def accept_cookies(driver):
+    try:
+        # Wait for the cookies button to be clickable
+        button = WebDriverWait(driver, 5).until(
+            EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
+        )
+
+        # Click the button
+        button.click()
+    except Exception as e:
+        print(f"Error: {e}")
 
 
 def scrape_playlist(playlist_html):
@@ -62,6 +78,11 @@ def scrape_playlist(playlist_html):
             print("Warning: href attribute not found.")
 
     return song_urls
+
+
+def scroll_to_bottom(driver):
+    # Get the body element
+    body = driver.find_element
 
 
 def parse_args():
